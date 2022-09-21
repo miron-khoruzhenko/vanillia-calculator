@@ -3,185 +3,127 @@ function getElm(str, isArr=false){
     else return document.querySelectorAll(str);
 }
 
-const   numbers     = getElm(".btn--number", true),
-        ftBtns      = getElm(".btn--operator", true),
-        // closePaBtn  = getElm("#btn--close-pa"),
-        percentBtn  = getElm("#btn--percent"),
-        // openPaBtn   = getElm("#btn--open-pa"),
+const   numberBtns  = getElm(".btn--number", true),
+        historyBl   = getElm(".calc__display__history"),
+        parenBtn    = getElm("#btn--paren"),
+
         minusBtn    = getElm("#btn--minus"),
         multBtn     = getElm("#btn--mult"),
         plusBtn     = getElm("#btn--plus"),
-        // ansBtn      = getElm("#btn--ans"),
+        
+        ftBtns      = getElm(".btn--operator", true),
         delBtn      = getElm("#btn--del"),
         divBtn      = getElm("#btn--div"),
-        // powBtn      = getElm("#btn--pow"),
+
         dotBtn      = getElm("#btn--dot"),
-        sumBtn      = getElm("#btn--sum"),
+        sumBtn      = getElm("#btn--btnFt.sum"),
         acBtn       = getElm("#btn--ac"),
-        history     = getElm(".calc__display__history"),
         input       = getElm(".calc__display__input input");
 
-let sum = 0,
-    lastNum = 0,
-    previousSym = '';
+// let btnFt.sum = 0;
 
 const btnFt = {
+    isParenOpen : false,
+    sum : 0,
+
     allClear : () => {
+        input.value = "";
+        historyBl.innerText = "";
+        btnFt.sum = 0;
+        previousSym = 0;
+    },
+    delLastElem : () =>{
+        input.value = input.value.slice(0, input.value.length -1);
+    },
+    ctrlAddSymbol : (sym) => {
+        let hstyStr = historyBl.innerText
+        let hstyLstCh = hstyStr[hstyStr.length - 1] || "";
+    
+        if(hstyLstCh === "" && input.value === "")
+            return;
+    
+        if(hstyLstCh.match(/[%÷×+-.]/g) && input.value === "")
+        {
+            if(sym !== "%" && hstyLstCh !== "%")
+                historyBl.innerText = hstyStr.slice(0, hstyStr.length - 2) + " " + sym;
+    
+            else if(sym !== "%" && hstyLstCh === "%")
+                historyBl.innerText = hstyStr.slice(0, hstyStr.length - 1) + " " + sym;
+    
+            else if (sym === "%" && hstyLstCh !== "%")
+                historyBl.innerText = hstyStr.slice(0, hstyStr.length - 2) + sym;
+    
+            else
+                historyBl.innerText[hstyStr.length - 1] += sym;
+            
+    
+        }else
+        {
+            if(sym === "%")
+                historyBl.innerText += " " + input.value + sym;
+            else
+                historyBl.innerText += " " + `${input.value} ${sym}`;
+            input.value = '';
+    
+        }
+    },
+
+    formatHistoryStr : (str) => {
+        str = str
+        .replace(/×/g, "*")
+        .replace(/%/g, "/ 100")
+        .replace(/÷/g, "/")
+
+        return str;
+    },
+
+    ctrlAddToSum : () => {
+
+        let allNumStr = btnFt.formatHistoryStr(historyBl.innerText);
+
+        if(allNumStr === "")
+            return;
+
+        else if(!allNumStr[allNumStr.length - 1].match(/\d/g))
+            allNumStr = allNumStr.slice(0, -1)
+
+        btnFt.sum = eval(allNumStr);
+    },
+
+    sumAndDisplay : () => {
+        //Проверка, подсчет и вывод суммированного числа. 
+        if (input.value)
+            historyBl.innerText += " " + input.value
+    
+        btnFt.ctrlAddToSum();
+        historyBl.innerText = "";
         
+        input.value = btnFt.sum;
+    },
+    ctrlParen : () => {
+
     }
 }
-function allClear()
-{
-    input.value = "";
-    history.innerText = "";
-    sum = 0;
-    lastNum = 0;
-    previousSym = 0;
-}
 
-function delLast()
-{
-    input.value = input.value.slice(0, input.value.length -1);
-}
+btnFt.allClear();
 
-function addSymbol(sym)
-{
-    let hstyStr = history.innerText
-    let hstyLstCh = hstyStr[hstyStr.length - 1] || "";
-
-    if(hstyLstCh === "" && input.value === "")
-        return;
-
-    if(hstyLstCh.match(/[%÷×+-.]/g) && input.value === "")
-    {
-        if(sym !== "%" && hstyLstCh !== "%")
-            history.innerText = hstyStr.slice(0, hstyStr.length - 2) + " " + sym;
-
-        else if(sym !== "%" && hstyLstCh === "%")
-            history.innerText = hstyStr.slice(0, hstyStr.length - 1) + " " + sym;
-
-        else if (sym === "%" && hstyLstCh !== "%")
-            history.innerText = hstyStr.slice(0, hstyStr.length - 2) + sym;
-
-        else
-            history.innerText[hstyStr.length - 1] += sym;
-        
-
-    }else
-    {
-        if(sym === "%")
-            history.innerText += " " + input.value + sym;
-        else
-            history.innerText += " " + `${input.value} ${sym}`;
-        input.value = '';
-
-    }
-    previousSym = sym;
-
-}
-
-function addSum(sym){
-
-    let allNumStr = history.innerText
-                    .replace(/×/g, "*")
-                    .replace(/%/g, "/ 100")
-                    .replace(/÷/g, "/")
-
-    console.log("allNumStr: ", allNumStr[allNumStr.length - 1])
-    if(allNumStr === "")
-        return;
-    else if(!allNumStr[allNumStr.length - 1].match(/\d/g))
-        allNumStr = allNumStr.slice(0, -1)
-
-    console.log(allNumStr)
-
-    sum = eval(allNumStr);
-}
-
-
-numbers.forEach(element => {
-    element.addEventListener("click", () => {
-        input.value += element.innerText;
+numberBtns.forEach(numBtn => {
+    numBtn.addEventListener("click", () => {
+        input.value += numBtn.innerText;
     })
 });
 
-ftBtns.forEach(element => {
-    element.addEventListener("click", () => {
+ftBtns.forEach(ftBtn => {
+    //* При нажатии на функциональную кнопку, проверь символ, добавь его
+    //* и выполни предыдущую операцию.
 
-        
-        addSymbol(element.innerText);
-        addSum();
-        console.log("Sum", sum);
+    ftBtn.addEventListener("click", () => {        
+        btnFt.ctrlAddSymbol(ftBtn.innerText);
+        btnFt.ctrlAddToSum();
     })
 })
 
-sumBtn.addEventListener("click", () => {
-    if (input.value)
-        history.innerText += " " + input.value
-    addSum();
-    history.innerText = "";
-    input.value = sum;
 
-})
-
-acBtn.addEventListener("click", allClear);
-delBtn.addEventListener("click", delLast);
-// minusBtn.addEventListener("click", () => {
-//     // console.log(history.innerText.length)
-//     addSymbol(minusBtn.innerText);
-// })
-// input.addEventListener("input", delLast);
-
-
-// });
-
-// function numberCtrl()
-// {
-//     let inputVar = input.value;
-
-//     if(input.value[input.value.length - 2] === " " && 
-//     input.value[input.value.length - 1] === " "){
-//         input.value = inputVar.slice(0, inputVar.length - 1);
-//         console.log(1)
-//     }
-
-//     console.log(parseInt("4+5".replace(/\s/g, "")))
-
-//     // input.value = inputVar
-//     // .replace(/[^-.0-9]/g, '')
-//     // .replace(/(.)-+/g, '$1')
-//     // .replace(/\.(?=.*\.)/g, '');
-// }
-
-// input.addEventListener("input", numberCtrl);
-
-// function addSum(sym){
-    // if(input.value === "" || history.innerText === "")
-    //     if(history.innerText === ""){
-    //         sum += +input.value
-    //         return;
-    //     }
-
-    // let allNumArr = history.innerText.split(/[%÷×+-.\s]/g);
-    // let previousNum = +allNumArr[allNumArr.length - 3];
-    // console.log("Array:", allNumArr)
-    // console.log("Operated number: ", previousNum)
-    
-    // lastNum = +input.value
-    // switch (sym){
-    //     case "+":
-    //         sum += lastNum;
-    //         break;
-    //     case "-":
-    //         sum -= lastNum;
-    //         break;
-    //     case "×":
-    //         sum += previousNum * (lastNum - 1);
-    //         break;
-    //     case "÷":
-    //         sum /= lastNum;
-    //         break;
-
-    
-    // }
-// }
+sumBtn.addEventListener("click", btnFt.sumAndDisplay)
+acBtn.addEventListener("click", btnFt.allClear);
+delBtn.addEventListener("click", btnFt.delLastElem);
