@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import "zero";
+
+html{
+	font-size: 16px;
+}
+
+body{
+	background: rgb(89,56,174);
+	background: linear-gradient(142deg, rgba(89,56,174,1) 0%, rgba(185,58,229,1) 100%);
+
+	color: #2f2f2f;
+	font-family: 'Roboto', sans-serif;
+}
+
+.calc{
+    min-width: 300px;
+
+	padding: 1rem 0.5rem;
+
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+
+	background-color: #fff;
+
+	-webkit-box-shadow: 0px 0px 1rem 1px #2f2f2f;
+	-moz-box-shadow: 0px 0px 1rem 1px #2f2f2f;
+	box-shadow: 0px 0px 1rem 1px #2f2f2f;
+
+	border-radius: 1rem;	
+
+
+	&__display{
+		border: 1px solid #dfdfdf ;
+		border-radius: 0.5rem;
+		margin-bottom: 0.5rem;
+
+		text-align: right;
+		
+		padding: 0.8rem;
+
+		&__history{
+			min-height: 1rem;
+			color: #5d5d5d;
+			margin-bottom: 0.3rem;
+		}
+		&__input{
+			input{
+				width: 100%;
+
+				font-size: 1.5rem;
+				text-align: right;
+				-moz-appearance: textfield;
+
+				&::-webkit-outer-spin-button,
+				&::-webkit-inner-spin-button {
+					-webkit-appearance: none;
+					margin: 0;
+				}
+				&:disabled{
+					color: #2f2f2f;
+
+				}
+			}
+		}
+	}
+	&__btn-grid{
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		grid-template-rows: repeat(5, 1fr);
+		
+		gap: 5px;
+
+		.btn{
+
+			width: 100%;
+
+			padding: 1rem;
+
+			text-align: center;
+			
+			background-color: #ececec;
+			font-size: 1.2rem;
+
+			border-radius: 0.3rem;
+
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select:none;
+			user-select:none;
+			-o-user-select:none;
+			
+			cursor: pointer;
+
+			&:nth-child(17){
+				grid-column: 1 / 3;
+			}
+
+			&:hover{
+				background-color: #e3e2e2;
+			}
+
+			&--ft{
+				background-color: #dcdcdc;
+				
+				&:hover{
+					background-color: #d3d3d3;
+				}
+
+				sup{
+					font-size: 0.7rem;
+				}
+			}
+
+			&--sum{
+				background-color: #8d78c4;
+				color: #fff;
+				
+				&:hover{
+					background-color: #ac97e0;
+				}
+			}
+
+
+			&:active{
+				-webkit-box-shadow: 0px 0px 0.2rem 1px #c0c0c0;
+				-moz-box-shadow: 0px 0px 0.2rem 1px #c0c0c0;
+				box-shadow: 0px 0px 0.2rem 1px #c0c0c0;
+			}
+		}
+	}
+}
