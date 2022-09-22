@@ -18,9 +18,8 @@ const   numberBtns  = getElm(".btn--number", true),
         dotBtn      = getElm("#btn--dot"),
         sumBtn      = getElm("#btn--sum"),
         acBtn       = getElm("#btn--ac"),
-        input       = getElm(".calc__display__input input");
 
-// let btnFt.sum = 0;
+        input       = getElm(".calc__display__input input");
 
 const btnFt = {
     isParenOpen : false,
@@ -35,17 +34,19 @@ const btnFt = {
         btnFt.isSumBtnUsed  = 0;
         btnFt.isParenOpen   = false;
         btnFt.isParenDel    = false;
+        parenBtn.style.background = "#d3d3d3";
     },
     
     delLastElem : () =>{
         if(input.value[input.value.length - 1] === ")"){
             btnFt.isParenOpen   = true;
             btnFt.isParenDel    = true;
+            parenBtn.style.background = "#b5b4b4";
         }
         else if (input.value[input.value.length - 1] === "("){
             btnFt.isParenOpen   = false;
-            btnFt.isParenDel    = false; 
-
+            btnFt.isParenDel    = false;
+            parenBtn.style.background = "#d3d3d3";
         }
         if(input.value != " ")
             input.value = input.value.slice(0, input.value.length -1);
@@ -60,17 +61,24 @@ const btnFt = {
             input.value = inputStr;
         }
 
+        // TODO: (3 +) + del + () = (3) -> dark
+        // TODO: (3 + 3) + del + "+" = (3 + +)
         if(btnFt.isParenOpen){
             inputLstCh = inputStr[inputStr.length - 2] || "";
+
             if(inputLstCh.match(/[\s÷×+-.)]/g)){
-                if (sym === "( )"){
+                if (sym === "( )" && !btnFt.isParenDel){
                     input.value = `${inputStr.slice(0, inputStr.length - 3)}`;
                     btnFt.ctrlParen()
                 }
                 else{
-                    if(btnFt.isParenDel){
-                        input.value = `${inputStr.slice(0, inputStr.length - 2)} ${sym}`;
+                    if (btnFt.isParenDel && sym === "( )"){
                         btnFt.isParenDel = false;
+                        btnFt.ctrlParen()
+                    }
+                    else if(btnFt.isParenDel && inputLstCh.match(/[\s\d]/)){
+                        input.value = `${inputStr.slice(0, inputStr.length - 2)} ${sym}`;
+                        btnFt.isParenDel = false;   
                     }
                     else
                         input.value = `${inputStr.slice(0, inputStr.length - 3)} ${sym}`;
@@ -81,26 +89,25 @@ const btnFt = {
                     btnFt.ctrlParen()
                     return;
                 }
-                else
-                    if(!btnFt.isParenDel){
-                        if(inputLstCh === "("){
-                            if(sym !== "×" && sym !== "÷" && sym !== "+")
-                                input.value = `${inputStr.slice(0, inputStr.length - 1)}${sym}`;
-                            else
-                                input.value = `${inputStr.slice(0, inputStr.length - 1)}`;                          
-                        }else{
-                            input.value = `${inputStr.slice(0, inputStr.length - 1)} ${sym}`;
-                        }
+                else if(!btnFt.isParenDel){
+                    if(inputLstCh === "("){
+                        if(sym !== "×" && sym !== "÷" && sym !== "+")
+                            input.value = `${inputStr.slice(0, inputStr.length - 1)}${sym}`;
+                        else
+                            input.value = `${inputStr.slice(0, inputStr.length - 1)}`;                          
+                    }else
+                        input.value = `${inputStr.slice(0, inputStr.length - 1)} ${sym}`;
+                }
+                    
+                else if(btnFt.isParenDel){
+                    if(inputLstCh.match(/[\s÷×+-.)]/)){
+                        input.value += ` ${sym}`;
+                        return;                        
                     }
                     else
-                        if(sym.match(/[+-×÷\s]/)){
-                            if(sym.match(/\s/))
-                                input.value += `${sym}`;
-                            input.value += ` ${sym}`;
-                            return;
-                        }
-                        else
-                            input.value += `${sym}`;
+                        input.value += `${sym}`;
+                    btnFt.isParenDel = false;
+                }
             }
             input.value += ')'
 
@@ -212,14 +219,18 @@ const btnFt = {
         }else
             addNum()
     },
+
     ctrlParen : () => {
         if(!btnFt.isParenOpen){
             btnFt.isParenOpen = true;
             input.value += "(";
+            parenBtn.style.background = "#b5b4b4";
         }else{
             if(input.value[input.value.length - 2].match(/[÷×+-.\(]/))
                 return;
             btnFt.isParenOpen = false;
+            parenBtn.style.background = "#d3d3d3";
+
         }
     }
 }
