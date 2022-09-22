@@ -74,10 +74,14 @@ const btnFt = {
                 else{
                     if (btnFt.isParenDel && sym === "( )"){
                         btnFt.isParenDel = false;
+                        console.log(1)
                         btnFt.ctrlParen()
                     }
                     else if(btnFt.isParenDel && inputLstCh.match(/[\s\d]/)){
-                        input.value = `${inputStr.slice(0, inputStr.length - 2)} ${sym}`;
+                        if(input.value.slice(-2).match(/\s\d/))
+                            input.value += ` ${sym}`;
+                        else
+                            input.value = `${input.value.slice(0,-1)}${sym}`;
                         btnFt.isParenDel = false;   
                     }
                     else
@@ -211,11 +215,19 @@ const btnFt = {
         if(btnFt.isSumBtnUsed === 1)
             btnFt.allClear();
         if(btnFt.isParenOpen){
-            if(!btnFt.isParenDel)
+            if(!btnFt.isParenDel || 
+                (btnFt.isParenDel && input.value[input.value.length - 1].match(/\s/)))
                 input.value = input.value.slice(0, -1);
+
             btnFt.isParenDel = false
             addNum();
             input.value += ")";
+
+            // btnFt.isParenDel = false
+            // if(input.value[input.value.length - 1].match(/\s/))
+            //     input.value = input.value.slice(0, -1);
+            // addNum();
+            // input.value += ")";
         }else
             addNum()
     },
