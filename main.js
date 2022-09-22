@@ -66,75 +66,103 @@ const btnFt = {
         if(btnFt.isParenOpen){
             inputLstCh = inputStr[inputStr.length - 2] || "";
 
-            if(inputLstCh.match(/[\s÷×+-.)]/g)){
+            if(inputLstCh.match(/[\s÷×+-.\(\)]/g))
+            {
                 if (sym === "( )" && !btnFt.isParenDel){
                     input.value = `${inputStr.slice(0, inputStr.length - 3)}`;
-                    btnFt.ctrlParen()
+                    btnFt.ctrlParen();
                 }
-                else{
-                    if (btnFt.isParenDel && sym === "( )"){
-                        btnFt.isParenDel = false;
-                        console.log(1)
-                        btnFt.ctrlParen()
-                    }
-                    else if(btnFt.isParenDel && inputLstCh.match(/[\s\d]/)){
-                        if(input.value.slice(-2).match(/\s\d/))
+                else if(!btnFt.isParenDel && inputLstCh === "(" && sym.match(/[×÷+]/))
+                    input.value = `${inputStr.slice(0, inputStr.length - 1)}`;
+                else
+                {
+                    if (btnFt.isParenDel && sym === "( )")
+                        btnFt.ctrlParen();
+
+                    else if(btnFt.isParenDel && inputLstCh.match(/[\s\d\(]/))
+                    {
+                        if(input.value.slice(-2).match(/\s\d/) || 
+                        input.value.slice(-2).match(/\(\d/))
                             input.value += ` ${sym}`;
+
                         else
                             input.value = `${input.value.slice(0,-1)}${sym}`;
-                        btnFt.isParenDel = false;   
                     }
-                    else
+
+                    else{
                         input.value = `${inputStr.slice(0, inputStr.length - 3)} ${sym}`;
+                    }
+                    
+                    btnFt.isParenDel = false;   
                 }
             }
-            else{
-                if (sym === "( )"){
-                    btnFt.ctrlParen()
+
+            else
+            {
+                if (sym === "( )")
+                {
+                    btnFt.ctrlParen();
                     return;
                 }
-                else if(!btnFt.isParenDel){
-                    if(inputLstCh === "("){
+
+                else if(!btnFt.isParenDel)
+                {
+                    if(inputLstCh === "(")
+                    {
                         if(sym !== "×" && sym !== "÷" && sym !== "+")
                             input.value = `${inputStr.slice(0, inputStr.length - 1)}${sym}`;
+
                         else
                             input.value = `${inputStr.slice(0, inputStr.length - 1)}`;                          
-                    }else
+                    }
+                    else
                         input.value = `${inputStr.slice(0, inputStr.length - 1)} ${sym}`;
                 }
                     
-                else if(btnFt.isParenDel){
-                    if(inputLstCh.match(/[\s÷×+-.)]/)){
+                else if(btnFt.isParenDel)
+                {
+                    if(inputLstCh.match(/[\s÷×+-.)]/))
+                    {
                         input.value += ` ${sym}`;
                         return;                        
                     }
+                    else if(inputLstCh.match(/\d/))
+                        input.value += ` ${sym}`;
+
                     else
                         input.value += `${sym}`;
+
                     btnFt.isParenDel = false;
                 }
             }
-            input.value += ')'
 
+            input.value += ')';
         }
-        else{
+
+        else
+        {
             if(inputLstCh.match(/[÷×+-.]/g)){
-                if (sym === "( )"){
+                if (sym === "( )")
+                {
                     input.value = `${inputStr.slice(0, inputStr.length - 2)}`;
-                    btnFt.ctrlParen()
-                    input.value += ')'
+                    btnFt.ctrlParen();
+                    input.value += ')';
                 }
                 
-                else{
+                else
                     input.value = `${inputStr.slice(0, inputStr.length - 2)} ${sym}`;
-                }
             }
-            else{
-                if (sym === "( )"){
-                    btnFt.ctrlParen()
-                    input.value += ')'
-                }else if(inputLstCh == " " && (sym === "×" || sym === "÷" || sym === "+")){
-                    return;
+            else
+            {
+                if (sym === "( )")
+                {
+                    btnFt.ctrlParen();
+                    input.value += ')';
                 }
+
+                else if(inputLstCh == " " && (sym === "×" || sym === "÷" || sym === "+"))
+                    return;
+
                 else
                     input.value += ` ${sym}`;
             }
