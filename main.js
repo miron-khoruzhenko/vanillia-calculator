@@ -22,159 +22,114 @@ const   numberBtns  = getElm(".btn--number", true),
         input       = getElm(".calc__display__input input");
 
 const btnFt = {
-    isParenOpen : false,
-    sum         : 0,
-    isSumBtnUsed: 0,
-    isParenDel  : false,
+    sum             : 0,
+    isParenOpen     : false,
+    isSumBtnUsed    : false,
+    isParenDeleted  : false,
 
     allClear : () => {
         input.value         = " ";
         historyBl.innerText = "";
         btnFt.sum           = 0;
-        btnFt.isSumBtnUsed  = 0;
+        btnFt.isSumBtnUsed  = false;
         btnFt.isParenOpen   = false;
-        btnFt.isParenDel    = false;
+        btnFt.isParenDeleted= false;
         parenBtn.style.background = "#d3d3d3";
+    },
+
+    repairStr: () =>{
+        //* Восстановление строки после использования кнопки del. Убирает лишние пробелы и добавляет нужные
+
+        str = input.value
+        .replace(/\s/g, "")
+        .replace(/[÷×+-]/g, " $& ")
+
+        if(str.slice(0,3).match(/\s\-\s/))
+            str = "-" + str.slice(3);
+        
+        input.value = str;
     },
     
     delLastElem : () =>{
         if(input.value[input.value.length - 1] === ")"){
-            btnFt.isParenOpen   = true;
-            btnFt.isParenDel    = true;
+            btnFt.isParenOpen       = true;
+            btnFt.isParenDeleted    = true;
             parenBtn.style.background = "#b5b4b4";
         }
         else if (input.value[input.value.length - 1] === "("){
-            btnFt.isParenOpen   = false;
-            btnFt.isParenDel    = false;
+            btnFt.isParenOpen       = false;
+            btnFt.isParenDeleted    = false;
             parenBtn.style.background = "#d3d3d3";
         }
         if(input.value != " ")
             input.value = input.value.slice(0, input.value.length -1);
     },
     
-    ctrlAddSymbol : (sym) => {
-        let inputStr    = input.value,
-            inputLstCh  = inputStr[inputStr.length - 1] || "";
+    switchParen : () => {
+        if(!btnFt.isParenOpen){
+            btnFt.isParenOpen = true;
 
-        if(btnFt.isSumBtnUsed === 1){
-            btnFt.allClear();
-            input.value = inputStr;
+            // input.value += "(";
+            parenBtn.style.background = "#b5b4b4";
+
+        }else{
+            // if(input.value[input.value.length - 2].match(/[÷×+-.\(]/))
+            //     return;
+            btnFt.isParenOpen = false;
+            parenBtn.style.background = "#d3d3d3";
         }
-
-        // TODO: (3 +) + del + () = (3) -> dark
-        // TODO: (3 + 3) + del + "+" = (3 + +)
-        if(btnFt.isParenOpen){
-            inputLstCh = inputStr[inputStr.length - 2] || "";
-
-            if(inputLstCh.match(/[\s÷×+-.\(\)]/g))
-            {
-                if (sym === "( )" && !btnFt.isParenDel){
-                    input.value = `${inputStr.slice(0, inputStr.length - 3)}`;
-                    btnFt.ctrlParen();
-                }
-                else if(!btnFt.isParenDel && inputLstCh === "(" && sym.match(/[×÷+]/))
-                    input.value = `${inputStr.slice(0, inputStr.length - 1)}`;
-                else
-                {
-                    if (btnFt.isParenDel && sym === "( )")
-                        btnFt.ctrlParen();
-
-                    else if(btnFt.isParenDel && inputLstCh.match(/[\s\d\(]/))
-                    {
-                        if(input.value.slice(-2).match(/\s\d/) || 
-                        input.value.slice(-2).match(/\(\d/))
-                            input.value += ` ${sym}`;
-
-                        else
-                            input.value = `${input.value.slice(0,-1)}${sym}`;
-                    }
-
-                    else{
-                        input.value = `${inputStr.slice(0, inputStr.length - 3)} ${sym}`;
-                    }
-                    
-                    btnFt.isParenDel = false;   
-                }
-            }
-
-            else
-            {
-                if (sym === "( )")
-                {
-                    btnFt.ctrlParen();
-                    return;
-                }
-
-                else if(!btnFt.isParenDel)
-                {
-                    if(inputLstCh === "(")
-                    {
-                        if(sym !== "×" && sym !== "÷" && sym !== "+")
-                            input.value = `${inputStr.slice(0, inputStr.length - 1)}${sym}`;
-
-                        else
-                            input.value = `${inputStr.slice(0, inputStr.length - 1)}`;                          
-                    }
-                    else
-                        input.value = `${inputStr.slice(0, inputStr.length - 1)} ${sym}`;
-                }
-                    
-                else if(btnFt.isParenDel)
-                {
-                    if(inputLstCh.match(/[\s÷×+-.)]/))
-                    {
-                        input.value += ` ${sym}`;
-                        return;                        
-                    }
-                    else if(inputLstCh.match(/\d/))
-                        input.value += ` ${sym}`;
-
-                    else
-                        input.value += `${sym}`;
-
-                    btnFt.isParenDel = false;
-                }
-            }
-
-            input.value += ')';
-        }
-
-        else
-        {
-            if(inputLstCh.match(/[÷×+-.]/g)){
-                if (sym === "( )")
-                {
-                    input.value = `${inputStr.slice(0, inputStr.length - 2)}`;
-                    btnFt.ctrlParen();
-                    input.value += ')';
-                }
-                
-                else
-                    input.value = `${inputStr.slice(0, inputStr.length - 2)} ${sym}`;
-            }
-            else
-            {
-                if (sym === "( )")
-                {
-                    btnFt.ctrlParen();
-                    input.value += ')';
-                }
-
-                else if(inputLstCh == " " && (sym === "×" || sym === "÷" || sym === "+"))
-                    return;
-
-                else
-                    input.value += ` ${sym}`;
-            }
-        }
+        
+        return btnFt.isParenOpen;
     },
 
-    formatStr : (str) => {
-        str = str
-        .replace(/×/g, "*")
-        .replace(/%/g, "/ 100")
-        .replace(/÷/g, "/")
+    putParen : (func = null) => {
+        if (!btnFt.isParenOpen)
+            input.value += "("
+        
+            
+        input.value = input.value.replace(/\)/, "");
+            
+        if(func === "( )")
+            btnFt.switchParen()
 
+        else if(func !== null)
+            func();
+
+        input.value += ")"
+    },
+
+    isThereDot : (inputStr) => {
+        for(let i = inputStr.length - 1; !inputStr[i].match(/\s/) && i > 0; i--){
+            if(inputStr[i] === ".")
+                return true;                
+        }
+        return false;
+    },
+
+    operateDot : () => {
+        let inputStr = input.value;
+
+        inputStr = inputStr.replace(/\s/g, "");
+        if (inputStr.match(/[÷×+-.]$/) || inputStr === ""){
+            input.value += "0."
+            return;
+        }
+
+        else if (btnFt.isThereDot(inputStr))
+            return;
+    
+        input.value += ".";
+        btnFt.repairStr()
+    },
+
+    formatString : () => {
+        //* Форматирование строки для функции eval. Замена символов знаков умножения, деления и добавление знаков умножения,
+
+
+        str = input.value
+        .replace(/×/g, "*")
+        .replace(/÷/g, "/")
+    
         for(let char = 0; char < str.length; char++){
             if (str[char] === "(" && char !== 0){
                 if(str[char - 1].match(/\d/))
@@ -191,23 +146,16 @@ const btnFt = {
                         str = str.slice(0, char - 2) + ")"
                 }
             }
+    
+            // Если в конце остался символ то отруби его.
+            if(char === str.length - 1 && !str[char].match(/[\d\)]/g))
+                str = str.slice(0, -1)
+    
         }
-
-        return str;
-    },
-
-    ctrlAddToSum : () => {
-
-        let allNumStr = btnFt.formatStr(input.value);
-
-        if(allNumStr === "")
-            return;
-
-        else if(!allNumStr[allNumStr.length - 1].match(/[\d\)]/g))
-            allNumStr = allNumStr.slice(0, -1)
-
+    
+        
         try{
-            btnFt.sum = eval(allNumStr);
+            btnFt.sum = eval(str);
         }catch{
             if(btnFt.isSumBtnUsed)
                 input.value = "Error"
@@ -216,63 +164,120 @@ const btnFt = {
     },
 
     sumAndDisplay : () => {
-        //Проверка, подсчет и вывод суммированного числа. 
-        inputVar = input.value
-        btnFt.isSumBtnUsed = 1;
+        //* Проверка, подсчет и вывод суммированного числа.
 
-        if(inputVar[inputVar.length - 1].match(/[\s÷×+-.]/g))
+        inputVar = input.value
+
+        btnFt.isSumBtnUsed = true;
+
+        // Добавь всю проведенную операцию в историю но перед этим ...
+        // Если в конце остались символы то удали их и прилегающий к ним пробел.
+        if(inputVar.slice(-2).match(/\s[÷×+-.]/g))
             historyBl.innerText = inputVar.slice(0, inputVar.length - 2);
+            
+        // Если в конце стоит символ со скобкой то удали символ прилегающий к нему пробел но оставь скобку.
         else if(inputVar.slice(-2).match(/[\s÷×+-.]\)/))
             historyBl.innerText = inputVar.slice(0, -3) + ")"
+        
+        // Если ничего нет то просто перениси операцию
         else
             historyBl.innerText = inputVar;
 
+        btnFt.formatString()
 
-        btnFt.ctrlAddToSum();
+        // Если форматирование прошло успешно то покажи результат
         if(input.value !== "Error")
             input.value = btnFt.sum;
     },
 
     ctrlDisplayNumBtn : (numBtn) => {
+        //* Проверяет есть ли какие символы что бы отступить или нет и позже добавить число.
+
+        let inputLastChar = input.value[input.value.length - 1] || " ";
+
         const addNum = () => {
-            if (!input.value[input.value.length - 1].match(/[\s÷×+-.]/g))
+            // Если нет никаких символов то просто добавь число к цифре
+            if (!inputLastChar.match(/[\s÷×+-.]/g)){
+                if(inputLastChar === '0' && !btnFt.isThereDot(input.value))
+                    return;
                 input.value += numBtn.innerText;
+            }
+            
+            // Иначе создай уже новую цифру через пробел после знака
             else
                 input.value += " " + numBtn.innerText;
         }
-        if(btnFt.isSumBtnUsed === 1)
+
+        // Если до этого уже было использованно равно то сначала все обнули.
+        if(btnFt.isSumBtnUsed === true)
             btnFt.allClear();
-        if(btnFt.isParenOpen){
-            if(!btnFt.isParenDel || 
-                (btnFt.isParenDel && input.value[input.value.length - 1].match(/\s/)))
-                input.value = input.value.slice(0, -1);
 
-            btnFt.isParenDel = false
-            addNum();
-            input.value += ")";
-
-            // btnFt.isParenDel = false
-            // if(input.value[input.value.length - 1].match(/\s/))
-            //     input.value = input.value.slice(0, -1);
-            // addNum();
-            // input.value += ")";
-        }else
-            addNum()
+        // Если скобка открыта, то добавь закрывающую скобку и добавь перед ней результат функции
+        btnFt.isParenOpen ? btnFt.putParen(addNum) : addNum ()
+        btnFt.repairStr()
     },
 
-    ctrlParen : () => {
-        if(!btnFt.isParenOpen){
-            btnFt.isParenOpen = true;
-            input.value += "(";
-            parenBtn.style.background = "#b5b4b4";
-        }else{
-            if(input.value[input.value.length - 2].match(/[÷×+-.\(]/))
-                return;
-            btnFt.isParenOpen = false;
-            parenBtn.style.background = "#d3d3d3";
 
+
+
+    ctrlAddSymbol : (sym) => {
+        let inputStr    = input.value;
+
+        // Если до этого уже было использованно равно то сначала все обнули.
+        if(btnFt.isSumBtnUsed === true){
+            btnFt.allClear();
+            input.value = inputStr;
         }
-    }
+
+        // if(sym === "( )" && !btnFt.isParenOpen){
+        if(sym === "( )"){
+            btnFt.putParen(sym)
+            return;
+        }
+        // else if(sym === "( )"){
+        //     btnFt.switchParen()
+        //     return;
+        // }
+
+        if(inputStr === " " || inputStr.match(/\($/)){
+            if(sym === "-")
+                inputStr += "-"
+
+            else if(sym === "."){
+                console.log(inputStr)
+                btnFt.operateDot()
+            }
+            return;
+        }
+        
+
+        btnFt.repairStr()
+
+        if(inputStr.match(/[\s\.]$/)){
+            if(inputStr.match(/\.$/)){
+                input.value = inputStr.replace(/\d\.$/, "");
+            }
+            
+            // По любому остается пробел. Либо он был либо отрезание "0." создало его.
+            // По этому его проверка излишне
+            if(sym === ".")
+            {
+                console.log(input.value)
+                btnFt.operateDot()
+            }
+            
+            else{
+                input.value = input.value.replace(/[÷×+-.]\s$/, `${sym} `);
+            }
+        }
+        else if(sym === '.')
+            btnFt.operateDot()
+
+        else if(inputStr.match(/[\d\)]$/)){
+            input.value += ` ${sym} `;
+        }
+        
+    },
 }
 
 btnFt.allClear();
@@ -285,9 +290,14 @@ ftBtns.forEach(ftBtn => {
     //* При нажатии на функциональную кнопку, проверь символ, добавь его
     //* и выполни предыдущую операцию.
 
-    ftBtn.addEventListener("click", () => {        
-        btnFt.ctrlAddSymbol(ftBtn.innerText);
-        btnFt.ctrlAddToSum();
+    ftBtn.addEventListener("click", () => {
+        if(btnFt.isParenOpen && ftBtn.innerText !== "( )") 
+            btnFt.putParen(btnFt.ctrlAddSymbol(ftBtn.innerText)) 
+            
+        else
+            btnFt.ctrlAddSymbol(ftBtn.innerText);
+
+        btnFt.formatString();
     })
 })
 
