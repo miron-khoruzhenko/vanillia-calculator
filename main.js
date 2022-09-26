@@ -41,15 +41,58 @@ const btnFt = {
         //* Восстановление строки после использования кнопки del. Убирает лишние пробелы и добавляет нужные
 
         str = input.value
-        .replace(/\s/g, "")
-        .replace(/[÷×+-]/g, " $& ")
+        .replace(/\s/g, "") //Убрать возможные неправильные пробелы
+        .replace(/[÷×+-]/g, " $& ") //Добавить пробелы вокруг операторов
+        .replace(/\(\s\-\s/, "(-") //Убрать пробелы у минуса рядом со скобкой
 
+        // Убрать пробелы у минуса вначале уравнения. Дальше уже пробелы будут уместны 
         if(str.slice(0,3).match(/\s\-\s/))
             str = "-" + str.slice(3);
         
         input.value = str;
     },
     
+    formatString : () => {
+        //* Форматирование строки для функции eval. Замена символов знаков умножения, деления и добавление знаков умножения,
+
+
+        str = input.value
+        .replace(/×/g, "*")
+        .replace(/÷/g, "/")
+    
+        for(let charIndex = 0; charIndex < str.length; charIndex++){
+            if (str[charIndex] === "(" && charIndex !== 0){
+                if(str[charIndex - 1].match(/\d/))
+                    str = str.slice(0, charIndex) + " * " + str.slice(charIndex, )
+            }
+            
+            else if (str[charIndex] === ")"){
+                if(str[charIndex + 1]){
+                    if(str[charIndex + 1].match(/[\d\(]/))
+                            str = str.slice(0, charIndex + 1) + " * " + str.slice(charIndex + 1, )
+                    }
+                    
+                    if(str[charIndex - 1].match(/[\s÷×+-.]/)){
+                        str = str.slice(0, charIndex - 2) + ")"
+                }
+            }
+    
+            // Если в конце остался символ то отруби его.
+            if(charIndex === str.length - 1 && !str[charIndex].match(/[\d\)]/g))
+                str = str.slice(0, -1)
+    
+        }
+    
+        
+        try{
+            btnFt.sum = eval(str);
+        }catch{
+            if(btnFt.isSumBtnUsed)
+                input.value = "Error"
+            return;
+        }
+    },
+
     delLastElem : () =>{
         if(input.value[input.value.length - 1] === ")"){
             btnFt.isParenOpen       = true;
@@ -112,7 +155,7 @@ const btnFt = {
         let inputStr = input.value;
 
         inputStr = inputStr.replace(/\s/g, "");
-        if (inputStr.match(/[÷×+-.]$/) || inputStr === ""){
+        if (inputStr.match(/[÷×+\-\)\(]$/) || inputStr === ""){
             input.value += "0."
             return;
         }
@@ -124,46 +167,6 @@ const btnFt = {
         btnFt.repairStr()
     },
 
-    formatString : () => {
-        //* Форматирование строки для функции eval. Замена символов знаков умножения, деления и добавление знаков умножения,
-
-
-        str = input.value
-        .replace(/×/g, "*")
-        .replace(/÷/g, "/")
-    
-        for(let charIndex = 0; charIndex < str.length; charIndex++){
-            if (str[charIndex] === "(" && charIndex !== 0){
-                if(str[charIndex - 1].match(/\d/))
-                    str = str.slice(0, charIndex) + " * " + str.slice(charIndex, )
-            }
-            
-            else if (str[charIndex] === ")"){
-                if(str[charIndex + 1]){
-                    if(str[charIndex + 1].match(/[\d\(]/))
-                            str = str.slice(0, charIndex + 1) + " * " + str.slice(charIndex + 1, )
-                    }
-                    
-                    if(str[charIndex - 1].match(/[\s÷×+-.]/)){
-                        str = str.slice(0, charIndex - 2) + ")"
-                }
-            }
-    
-            // Если в конце остался символ то отруби его.
-            if(charIndex === str.length - 1 && !str[charIndex].match(/[\d\)]/g))
-                str = str.slice(0, -1)
-    
-        }
-    
-        
-        try{
-            btnFt.sum = eval(str);
-        }catch{
-            if(btnFt.isSumBtnUsed)
-                input.value = "Error"
-            return;
-        }
-    },
 
     sumAndDisplay : () => {
         //* Проверка, подсчет и вывод суммированного числа.
@@ -171,11 +174,13 @@ const btnFt = {
         inputVar = input.value
 
         btnFt.isSumBtnUsed = true;
+        if(btnFt.isParenOpen)
+            btnFt.switchParen()
 
         // Добавь всю проведенную операцию в историю но перед этим ...
         // Если в конце остались символы то удали их и прилегающий к ним пробел.
-        if(inputVar.slice(-2).match(/\s[÷×+-.]/g))
-            historyBl.innerText = inputVar.slice(0, inputVar.length - 2);
+        if(inputVar.slice(-2).match(/[÷×+-.]\s/g))
+            historyBl.innerText = input.value = inputVar.slice(0, inputVar.length - 2);
             
         // Если в конце стоит символ со скобкой то удали символ прилегающий к нему пробел но оставь скобку.
         else if(inputVar.slice(-2).match(/[\s÷×+-.]\)/))
@@ -185,10 +190,15 @@ const btnFt = {
         else
             historyBl.innerText = inputVar;
 
+        if(btnFt.isParenDeleted)
+            input.value += ")"
+        
+        
+        btnFt.repairStr()
         btnFt.formatString()
 
         // Если форматирование прошло успешно то покажи результат
-        if(input.value !== "Error")
+        if(input.value !== "Error" && btnFt.sum !== undefined)
             input.value = btnFt.sum;
     },
 
@@ -237,8 +247,6 @@ const btnFt = {
             return;
         }
 
-        console.log(inputStr)
-        console.log(sym)
         if(inputStr === " " || inputStr.match(/\($/)){
             if(sym === "-")
                 input.value += "-"
@@ -253,9 +261,9 @@ const btnFt = {
         btnFt.repairStr()
 
         if(inputStr.match(/[\s\.]$/)){
-            if(inputStr.match(/\.$/)){
-                input.value = inputStr.replace(/\d\.$/, "");
-            }
+            // if(inputStr.match(/\.$/)){
+            //     input.value = inputStr.replace(/\d\.$/, "");
+            // }
             
             // По любому остается пробел. Либо он был либо отрезание "0." создало его.
             // По этому его проверка излишне
