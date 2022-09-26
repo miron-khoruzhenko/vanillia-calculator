@@ -82,6 +82,8 @@ const btnFt = {
                 str = str.slice(0, -1)
     
         }
+
+        // if()
     
         
         try{
@@ -134,8 +136,11 @@ const btnFt = {
                 input.value = input.value.slice(0,i) + input.value.slice(i + 1);
         }
             
-        if(func === "( )")
-            btnFt.switchParen()
+        if(func === "( )"){
+            console.log(1)
+            if(input.value[input.value.length - 1] !== "(" || !btnFt.isParenOpen)
+                btnFt.switchParen()
+        }
 
         else if(func !== null)
             func(arg);
@@ -144,9 +149,10 @@ const btnFt = {
     },
 
     isThereDot : (inputStr) => {
-        for(let i = inputStr.length - 1; !inputStr[i].match(/\s/) && i > 0; i--){
+        for(let i = inputStr.length - 1; !inputStr[i].match(/[\s\-+÷×\)\(]/) && i > 0; i--){
             if(inputStr[i] === ".")
-                return true;                
+                return true;
+            console.log(inputStr[i])                
         }
         return false;
     },
@@ -160,8 +166,9 @@ const btnFt = {
             return;
         }
 
-        else if (btnFt.isThereDot(inputStr))
+        else if (btnFt.isThereDot(inputStr)){
             return;
+        }
     
         input.value += ".";
         btnFt.repairStr()
@@ -172,8 +179,8 @@ const btnFt = {
         //* Проверка, подсчет и вывод суммированного числа.
 
         inputVar = input.value
-
         btnFt.isSumBtnUsed = true;
+
         if(btnFt.isParenOpen)
             btnFt.switchParen()
 
@@ -190,6 +197,7 @@ const btnFt = {
         else
             historyBl.innerText = inputVar;
 
+        
         if(btnFt.isParenDeleted)
             input.value += ")"
         
@@ -199,7 +207,7 @@ const btnFt = {
 
         // Если форматирование прошло успешно то покажи результат
         if(input.value !== "Error" && btnFt.sum !== undefined)
-            input.value = btnFt.sum;
+            input.value = btnFt.sum; 
     },
 
     ctrlDisplayNumBtn : (numBtn) => {
@@ -247,7 +255,7 @@ const btnFt = {
             return;
         }
 
-        if(inputStr === " " || inputStr.match(/\($/)){
+        if(inputStr === " " || inputStr === "" || inputStr.match(/\($/)){
             if(sym === "-")
                 input.value += "-"
 
@@ -277,8 +285,9 @@ const btnFt = {
                 input.value = input.value.replace(/[÷×+-.]\s$/, `${sym} `);
             }
         }
-        else if(sym === '.')
+        else if(sym === '.'){
             btnFt.operateDot()
+        }
 
         else if(inputStr.match(/[\d\)]$/)){
             input.value += ` ${sym} `;
