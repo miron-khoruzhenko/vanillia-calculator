@@ -82,18 +82,20 @@ const btnFt = {
         return btnFt.isParenOpen;
     },
 
-    putParen : (func = null) => {
+    putParen : (func = null, arg = null) => {
         if (!btnFt.isParenOpen)
             input.value += "("
         
-            
-        input.value = input.value.replace(/\)/, "");
+        for(let i = input.value.length - 1; i > 0 && !input.value[i].match(/\(/); i--){
+            if (input.value[i].match(/\)/))
+                input.value = input.value.slice(0,i) + input.value.slice(i + 1);
+        }
             
         if(func === "( )")
             btnFt.switchParen()
 
         else if(func !== null)
-            func();
+            func(arg);
 
         input.value += ")"
     },
@@ -130,25 +132,25 @@ const btnFt = {
         .replace(/×/g, "*")
         .replace(/÷/g, "/")
     
-        for(let char = 0; char < str.length; char++){
-            if (str[char] === "(" && char !== 0){
-                if(str[char - 1].match(/\d/))
-                    str = str.slice(0, char) + " * " + str.slice(char, )
+        for(let charIndex = 0; charIndex < str.length; charIndex++){
+            if (str[charIndex] === "(" && charIndex !== 0){
+                if(str[charIndex - 1].match(/\d/))
+                    str = str.slice(0, charIndex) + " * " + str.slice(charIndex, )
             }
             
-            else if (str[char] === ")"){
-                if(str[char + 1]){
-                    if(str[char + 1].match(/[\d\(]/))
-                            str = str.slice(0, char + 1) + " * " + str.slice(char + 1, )
+            else if (str[charIndex] === ")"){
+                if(str[charIndex + 1]){
+                    if(str[charIndex + 1].match(/[\d\(]/))
+                            str = str.slice(0, charIndex + 1) + " * " + str.slice(charIndex + 1, )
                     }
                     
-                    if(str[char - 1].match(/[\s÷×+-.]/)){
-                        str = str.slice(0, char - 2) + ")"
+                    if(str[charIndex - 1].match(/[\s÷×+-.]/)){
+                        str = str.slice(0, charIndex - 2) + ")"
                 }
             }
     
             // Если в конце остался символ то отруби его.
-            if(char === str.length - 1 && !str[char].match(/[\d\)]/g))
+            if(charIndex === str.length - 1 && !str[charIndex].match(/[\d\)]/g))
                 str = str.slice(0, -1)
     
         }
@@ -229,22 +231,19 @@ const btnFt = {
             input.value = inputStr;
         }
 
-        // if(sym === "( )" && !btnFt.isParenOpen){
+
         if(sym === "( )"){
             btnFt.putParen(sym)
             return;
         }
-        // else if(sym === "( )"){
-        //     btnFt.switchParen()
-        //     return;
-        // }
 
+        console.log(inputStr)
+        console.log(sym)
         if(inputStr === " " || inputStr.match(/\($/)){
             if(sym === "-")
-                inputStr += "-"
+                input.value += "-"
 
             else if(sym === "."){
-                console.log(inputStr)
                 btnFt.operateDot()
             }
             return;
@@ -292,7 +291,8 @@ ftBtns.forEach(ftBtn => {
 
     ftBtn.addEventListener("click", () => {
         if(btnFt.isParenOpen && ftBtn.innerText !== "( )") 
-            btnFt.putParen(btnFt.ctrlAddSymbol(ftBtn.innerText)) 
+            btnFt.putParen(btnFt.ctrlAddSymbol, ftBtn.innerText) 
+            // btnFt.putParen(btnFt.ctrlAddSymbol(ftBtn.innerText)) 
             
         else
             btnFt.ctrlAddSymbol(ftBtn.innerText);
